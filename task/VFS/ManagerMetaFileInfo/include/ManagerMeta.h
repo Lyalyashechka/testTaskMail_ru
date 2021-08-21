@@ -12,7 +12,7 @@ namespace TestTask
     class ManagerMeta : public IManagerMeta
     {
     public:
-        ManagerMeta(/*std::filesystem::path locationFileSystemDirectory*/);
+        ManagerMeta(std::filesystem::path locationFileSystemDirectory);
 
         File *findFile(const char *name, statusFile setStatusIfFind) override;
 
@@ -26,5 +26,7 @@ namespace TestTask
         void writeMetaInfo(File &file);
         
         size_t getCountFile();
+
+        size_t getCountChunk();
     };
 }

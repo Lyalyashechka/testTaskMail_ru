@@ -2,7 +2,8 @@
 
 namespace TestTask
 {
-    VFS::VFS(std::filesystem::path locationFileSystemDirectory) 
+    VFS::VFS(std::filesystem::path locationFileSystemDirectory) :
+                             ManagerMeta_(std::make_unique<ManagerMeta>(locationFileSystemDirectory))
     {
         std::string root = "";
         if (locationFileSystemDirectory.string() != "")
@@ -12,7 +13,6 @@ namespace TestTask
         initFilesystemStructure(root);
         rootDirectory_ = root + NameRootFileSystemDirectory;
         metaDirectory_ = root + NameMetaInfoFilesDirectoriy;
-        ManagerMeta_ = std::make_unique<ManagerMeta>();
     }
 
     File *VFS::Open(const char *name)
@@ -23,6 +23,8 @@ namespace TestTask
         }
         else
         {
+            File* currentFile = ManagerMeta_->findFile(name, statusFile::readOnly_);
+
             return ManagerMeta_->findFile(name, statusFile::readOnly_);            
         }
     }
@@ -53,6 +55,18 @@ namespace TestTask
 
     size_t VFS::Write(File *f, char *buff, size_t len)
     {
+        std::fstream fileWithData;
+        std::cout << rootDirectory_.string();
+        fileWithData.open(rootDirectory_.string() + NameFileData);
+        if (fileWithData.is_open())
+        {
+            std::cout << "File write open"<<std::endl;
+            fileWithData.seekg(f->numberFirstChunk * SizeChunk, fileWithData.beg);
+            std::cout << fileWithData.tellg() << "tellp\n";
+            //fileWithData.write(buff, 1024);
+            fileWithData << buff;
+            fileWithData.close();
+        }
         return 0;
     }
 
@@ -82,8 +96,9 @@ namespace TestTask
     {
         std::ofstream file;
         file.open(metaDirectory_.string() + NameFileMetaInfo, std::ios_base::binary);
-        size_t countFiles = 0;
-        file.write(reinterpret_cast<char *>(&countFiles), sizeof(size_t));
+        size_t countFilesAndCountChunk = 0;
+        file.write(reinterpret_cast<char *>(&countFilesAndCountChunk), sizeof(size_t));
+        file.write(reinterpret_cast<char *>(&countFilesAndCountChunk), sizeof(size_t));
         file.close();
     }
 }

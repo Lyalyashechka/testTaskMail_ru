@@ -21,6 +21,8 @@ namespace TestTask
             this->lenFileName = file.lenFileName;
 
             this->fileName = file.fileName;
+
+            this->numberFirstChunk = file.numberFirstChunk;
         }
         //size_t hashFileName;
 
@@ -28,7 +30,7 @@ namespace TestTask
 
         std::string fileName;
 
-        //size_t posFseekFirstChunk;
+        size_t numberFirstChunk;
 
         statusFile status = statusFile::default_;
 
