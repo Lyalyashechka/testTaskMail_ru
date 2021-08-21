@@ -14,13 +14,21 @@ namespace TestTask
 
     struct File
     {
-        size_t hashFileName;
+        File(){};
+
+        File(const File &file)
+        {
+            this->lenFileName = file.lenFileName;
+
+            this->fileName = file.fileName;
+        }
+        //size_t hashFileName;
 
         size_t lenFileName;
 
         std::string fileName;
 
-        size_t posFseekFirstChunk;
+        //size_t posFseekFirstChunk;
 
         statusFile status = statusFile::default_;
 

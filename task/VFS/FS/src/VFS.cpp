@@ -2,7 +2,7 @@
 
 namespace TestTask
 {
-    VFS::VFS(std::filesystem::path locationFileSystemDirectory)
+    VFS::VFS(std::filesystem::path locationFileSystemDirectory) 
     {
         std::string root = "";
         if (locationFileSystemDirectory.string() != "")
@@ -12,21 +12,19 @@ namespace TestTask
         initFilesystemStructure(root);
         rootDirectory_ = root + NameRootFileSystemDirectory;
         metaDirectory_ = root + NameMetaInfoFilesDirectoriy;
+        ManagerMeta_ = std::make_unique<ManagerMeta>();
     }
 
     File *VFS::Open(const char *name)
     {
-        std::cout << numberOfFilesInDirectory(metaDirectory_) << std::endl;
         if (numberOfFilesInDirectory(metaDirectory_) == 0)
         {
             return nullptr;
         }
         else
         {
-            std::ifstream metaFile;
-            metaFile.open(metaDirectory_.string() + "/meta1.txt", std::ios_base::binary);
+            return ManagerMeta_->findFile(name, statusFile::readOnly_);            
         }
-        return nullptr;
     }
 
     File *VFS::Create(const char *name)
@@ -35,29 +33,17 @@ namespace TestTask
         {
             initMetaDataFile();
         }
-        std::fstream metaFile;
-
-        metaFile.open(metaDirectory_.string() + "/meta1.bin",
-                      std::ios_base::binary | std::ios_base::out | std::ios_base::in);
-        if (metaFile.is_open())
+        File *currentFIle = ManagerMeta_->findFile(name, statusFile::writeOnly_);
+        if (currentFIle == nullptr)
         {
-            size_t countFiles;
-            metaFile.read(reinterpret_cast<char *>(&countFiles), sizeof(size_t));
-            
-            /*if (ManagerMeta::findFile())
-            {
-                return FIle;
-            }
-            else{
-                ManagerMeta::createFile())
-            }*/
-            std::cout << countFiles;
-            metaFile.seekg(0, metaFile.beg);
-            countFiles++;
-            metaFile.write(reinterpret_cast<char *>(&countFiles), sizeof(size_t));
-            metaFile.close();
+            std::cout << "File create from VFS" << std::endl;
+            return ManagerMeta_->addFile(name);
         }
-        return nullptr;
+        else
+        {
+            std::cout << "File found" << std::endl;
+            return new File(*currentFIle);
+        }
     }
 
     size_t VFS::Read(File *f, char *buff, size_t len)
@@ -95,7 +81,7 @@ namespace TestTask
     void VFS::initMetaDataFile()
     {
         std::ofstream file;
-        file.open(metaDirectory_.string() + "/meta1.bin", std::ios_base::binary);
+        file.open(metaDirectory_.string() + NameFileMetaInfo, std::ios_base::binary);
         size_t countFiles = 0;
         file.write(reinterpret_cast<char *>(&countFiles), sizeof(size_t));
         file.close();

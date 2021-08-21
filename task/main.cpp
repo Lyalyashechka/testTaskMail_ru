@@ -1,8 +1,9 @@
 #include "VFS.h"
+#include "ManagerMeta.h"
 
 int main()
 {
-    TestTask::IVFS* fileSystem = new TestTask::VFS();
-    fileSystem->Create("sdfsgdf");
-    std::cout<<"Hello world\n";
+    std::unique_ptr<TestTask::IVFS> IVFSPtr(new TestTask::VFS());
+    IVFSPtr->Create("vtoroyFile");
+    std::cout << "Hello world\n";
 }

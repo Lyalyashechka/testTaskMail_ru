@@ -4,18 +4,12 @@
 
 namespace TestTask
 {
-
     struct IManagerMeta
     {
-        virtual File* findFile(const char *name ,int setStatusIfFind) = 0;
-
-        virtual size_t getCountFile() = 0;
+        virtual File *findFile(const char *name, statusFile setStatusIfFind) = 0;
 
         virtual void setStatusFile(statusFile status) = 0;
+
+        virtual File *addFile(const char *name) = 0;
     };
-    
-
-
-
-
 }

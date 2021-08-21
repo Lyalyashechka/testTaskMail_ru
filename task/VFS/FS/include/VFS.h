@@ -3,12 +3,11 @@
 #include <filesystem>
 #include <system_error>
 #include <fstream>
+#include <memory>
 
 #include "IVFS.h"
-#include "StructFile.h"
-
-#define NameRootFileSystemDirectory "RootFilesystem"
-#define NameMetaInfoFilesDirectoriy "RootFilesystem/MetaFilesInfo"
+#include "ManagerMeta.h"
+#include "RootName.h"
 
 namespace TestTask
 {
@@ -33,6 +32,8 @@ namespace TestTask
         void initFilesystemStructure(const std::string &locationFileSystemDirectory);
 
         size_t numberOfFilesInDirectory(std::filesystem::path path);
+
+        std::unique_ptr<IManagerMeta> ManagerMeta_;
 
         std::filesystem::path rootDirectory_;
 
