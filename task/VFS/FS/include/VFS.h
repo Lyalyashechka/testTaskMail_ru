@@ -35,7 +35,10 @@ namespace TestTask
 
         void initNewChunk();
 
+        size_t setCarriageInLastChunkFile(std::fstream &fileWithData);
+
         size_t numberOfFilesInDirectory(std::filesystem::path path);
+
 
         std::unique_ptr<IManagerMeta> ManagerMeta_;
 

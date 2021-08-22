@@ -6,7 +6,7 @@ namespace TestTask
 {
     struct IManagerMeta
     {
-        virtual File *findFile(const char *name, statusFile setStatusIfFind) = 0;
+        virtual File *findFileAndSetStatusIfFind(const char *name, statusFile setStatusIfFind) = 0;
 
         virtual File *addFile(const char *name) = 0;
 

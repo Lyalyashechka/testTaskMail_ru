@@ -14,7 +14,7 @@ namespace TestTask
     public:
         ManagerMeta(std::filesystem::path locationFileSystemDirectory);
 
-        File *findFile(const char *name, statusFile setStatusIfFind) override;
+        File *findFileAndSetStatusIfFind(const char *name, statusFile setStatusIfFind) override;
 
         File *addFile(const char *name) override;
 

@@ -12,7 +12,7 @@ namespace TestTask
         metaDirectory_ = root + NameMetaInfoFilesDirectoriy;
     }
 
-    File *ManagerMeta::findFile(const char *name, statusFile setStatusIfFind)
+    File *ManagerMeta::findFileAndSetStatusIfFind(const char *name, statusFile setStatusIfFind)
     {
         size_t countFiles = getCountFile();
         std::fstream metaFile;
@@ -23,23 +23,24 @@ namespace TestTask
             metaFile.seekg(2 * sizeof(size_t), metaFile.beg);
             for (int i = 0; i < countFiles; ++i)
             {
-                File currentFile;
-                metaFile.read(reinterpret_cast<char *>(&currentFile.lenFileName), sizeof(size_t));
-                char *buf = new char[currentFile.lenFileName + 1];
-                metaFile.read(reinterpret_cast<char *>(buf), currentFile.lenFileName);
-                buf[currentFile.lenFileName] = 0;
-                currentFile.fileName = buf;
-                delete buf;
-                int status;
-                metaFile.read(reinterpret_cast<char *>(&status), sizeof(int));
-                currentFile.status = static_cast<statusFile>(status);
-                metaFile.read(reinterpret_cast<char *>(&currentFile.numberFirstChunk), sizeof(size_t));
+                File currentFile = readOneFileInfo(metaFile);
                 if (currentFile.fileName == name)
                 {
-                    setStatusFile(metaFile, setStatusIfFind);
-                    currentFile.status = setStatusIfFind;
-                    metaFile.close();
-                    return new File(currentFile);
+                    if (currentFile.status == statusFile::default_ ||
+                        currentFile.status == setStatusIfFind)
+                    {
+                        setStatusFile(metaFile, setStatusIfFind);
+                        currentFile.status = setStatusIfFind;
+                        metaFile.close();
+                        return new File(currentFile);
+                    }
+                    else
+                    {
+                        std::cerr << "File " << currentFile.fileName
+                                  << "is already open in a different mode" << std::endl;
+                        metaFile.close();
+                        return nullptr;
+                    }
                 }
             }
             metaFile.close();
@@ -135,5 +136,19 @@ namespace TestTask
         }
     }
 
-
+    File ManagerMeta::readOneFileInfo(std::fstream &metaFile)
+    {
+        File currentFile;
+        metaFile.read(reinterpret_cast<char *>(&currentFile.lenFileName), sizeof(size_t));
+        char *buf = new char[currentFile.lenFileName + 1];
+        metaFile.read(reinterpret_cast<char *>(buf), currentFile.lenFileName);
+        buf[currentFile.lenFileName] = 0;
+        currentFile.fileName = buf;
+        delete buf;
+        int status;
+        metaFile.read(reinterpret_cast<char *>(&status), sizeof(int));
+        currentFile.status = static_cast<statusFile>(status);
+        metaFile.read(reinterpret_cast<char *>(&currentFile.numberFirstChunk), sizeof(size_t));
+        return currentFile;
+    }
 }

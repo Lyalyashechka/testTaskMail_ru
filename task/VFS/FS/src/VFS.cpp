@@ -22,9 +22,9 @@ namespace TestTask
         }
         else
         {
-            File *currentFile = ManagerMeta_->findFile(name, statusFile::readOnly_);
+            File *currentFile = ManagerMeta_->findFileAndSetStatusIfFind(name, statusFile::readOnly_);
 
-            return ManagerMeta_->findFile(name, statusFile::readOnly_);
+            return ManagerMeta_->findFileAndSetStatusIfFind(name, statusFile::readOnly_);
         }
     }
 
@@ -34,15 +34,15 @@ namespace TestTask
         {
             initMetaDataFile();
         }
-        File *currentFIle = ManagerMeta_->findFile(name, statusFile::writeOnly_);
+        File *currentFIle = ManagerMeta_->findFileAndSetStatusIfFind(name, statusFile::writeOnly_);
         if (currentFIle == nullptr)
         {
-            std::cout << "File create from VFS" << std::endl;
             currentFIle = ManagerMeta_->addFile(name);
             ssize_t firstChunkCurrentFile = ManagerMeta_->getCountChunk();
             currentFIle->numberFirstChunk = firstChunkCurrentFile;
             initNewChunk();
             ManagerMeta_->incrementCountChunk();
+            std::cout << "New file created" << std::endl;
             return new File(*currentFIle);
         }
         else
@@ -61,7 +61,6 @@ namespace TestTask
         {
             fileWithData.seekg(f->numberFirstChunk * IndentOneChunk, fileWithData.beg);
             size_t countFreeBlockInChunk = 0;
-
             int leftForReaded = len;
             int readed = 0;
             while (readed != len)
@@ -103,41 +102,8 @@ namespace TestTask
         fileWithData.open(rootDirectory_.string() + NameFileData /*, std::ios_base::binary | std::ios_base::out | std::ios_base::in*/);
         if (fileWithData.is_open())
         {
-            size_t countFreeBlockInChunk = 0;
-
             fileWithData.seekg(f->numberFirstChunk * IndentOneChunk, fileWithData.beg);
-
-            while (countFreeBlockInChunk == 0)
-            {
-                fileWithData.read(reinterpret_cast<char *>(&countFreeBlockInChunk), sizeof(size_t));
-                if (countFreeBlockInChunk == 0)
-                {
-                    ssize_t nextChunk = -1;
-                    size_t currentPosition = fileWithData.tellg();
-                    fileWithData.read(reinterpret_cast<char *>(&nextChunk), sizeof(ssize_t));
-                    if (nextChunk == -1)
-                    {
-                        ssize_t numNewChunk = ManagerMeta_->getCountChunk();
-                        initNewChunk();
-                        ManagerMeta_->incrementCountChunk();
-
-                        fileWithData.seekg(currentPosition, fileWithData.beg);
-                        fileWithData.write(reinterpret_cast<char *>(&numNewChunk), sizeof(ssize_t));
-                        fileWithData.seekg(numNewChunk * IndentOneChunk, fileWithData.beg);
-                        break;
-                    }
-                    else
-                    {
-                        fileWithData.seekg(nextChunk * IndentOneChunk, fileWithData.beg);
-                    }
-                }
-                else
-                {
-                    size_t positionOnBeginCurrentChunk = static_cast<size_t>(fileWithData.tellg()) -
-                                                         static_cast<size_t>(sizeof(size_t));
-                    fileWithData.seekg(positionOnBeginCurrentChunk, fileWithData.beg);
-                }
-            }
+            size_t countFreeBlockInChunk = setCarriageInLastChunkFile(fileWithData);
             std::cout << fileWithData.tellg() << "position for write" << std::endl;
             int leftToWrite = len;
             int writed = 0;
@@ -151,6 +117,7 @@ namespace TestTask
                     fileWithData.write(&buff[writed], leftToWrite);
                     writed += leftToWrite;
                 }
+                //длтлтлдтдлтдлтдлт
                 else
                 {
                     size_t newCountFreeBlockInChunk = 0;
@@ -176,7 +143,8 @@ namespace TestTask
 
     void VFS::Close(File *f)
     {
-        //ManagerMeta::setStatus(default)
+        ManagerMeta_->findFileAndSetStatusIfFind(f->fileName.data(), statusFile::default_);
+        f->status = statusFile::default_;
     }
 
     void VFS::initFilesystemStructure(const std::string &locationFileSystemDirectory)
@@ -226,5 +194,43 @@ namespace TestTask
             fileWithData.write(masForElement, SizeChunk);
             fileWithData.close();
         }
+    }
+
+    size_t VFS::setCarriageInLastChunkFile(std::fstream &fileWithData)
+    {
+        size_t countFreeBlockInChunk = 0;
+
+        while (countFreeBlockInChunk == 0)
+        {
+            fileWithData.read(reinterpret_cast<char *>(&countFreeBlockInChunk), sizeof(size_t));
+            if (countFreeBlockInChunk == 0)
+            {
+                ssize_t nextChunk = -1;
+                size_t currentPosition = fileWithData.tellg();
+                fileWithData.read(reinterpret_cast<char *>(&nextChunk), sizeof(ssize_t));
+                if (nextChunk == -1)
+                {
+                    ssize_t numNewChunk = ManagerMeta_->getCountChunk();
+                    initNewChunk();
+                    ManagerMeta_->incrementCountChunk();
+
+                    fileWithData.seekg(currentPosition, fileWithData.beg);
+                    fileWithData.write(reinterpret_cast<char *>(&numNewChunk), sizeof(ssize_t));
+                    fileWithData.seekg(numNewChunk * IndentOneChunk, fileWithData.beg);
+                    break;
+                }
+                else
+                {
+                    fileWithData.seekg(nextChunk * IndentOneChunk, fileWithData.beg);
+                }
+            }
+            else
+            {
+                size_t positionOnBeginCurrentChunk = static_cast<size_t>(fileWithData.tellg()) -
+                                                     static_cast<size_t>(sizeof(size_t));
+                fileWithData.seekg(positionOnBeginCurrentChunk, fileWithData.beg);
+            }
+        }
+        return countFreeBlockInChunk;
     }
 }

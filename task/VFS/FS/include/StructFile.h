@@ -23,6 +23,8 @@ namespace TestTask
             this->fileName = file.fileName;
 
             this->numberFirstChunk = file.numberFirstChunk;
+
+            this->status = file.status;
         }
         //size_t hashFileName;
 
