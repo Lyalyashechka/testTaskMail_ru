@@ -30,11 +30,13 @@ namespace TestTask
     {
         if (numberOfFilesInDirectory(metaDirectory_) == 0)
         {
-            initMetaDataFile();
+            initMetaInfoAndDataFile();
         }
         File *currentFIle = ManagerMeta_->findFileAndSetStatusIfFind(name, statusFile::writeOnly_);
         if (currentFIle == nullptr)
         {
+            std::lock_guard<std::mutex> lock(mutex_);
+
             currentFIle = ManagerMeta_->addFile(name);
             ssize_t firstChunkCurrentFile = ManagerMeta_->getCountChunk();
             currentFIle->numberFirstChunk = firstChunkCurrentFile;
@@ -122,6 +124,8 @@ namespace TestTask
         fileWithData.open(rootDirectory_.string() + NameFileData /*, std::ios_base::binary | std::ios_base::out | std::ios_base::in*/);
         if (fileWithData.is_open())
         {
+            std::lock_guard<std::mutex> lock(mutex_);
+
             fileWithData.seekg(f->numberFirstChunk * IndentOneChunk, fileWithData.beg);
             size_t countFreeBlockInChunk = setCarriageInLastChunkFile(fileWithData);
             std::cout << fileWithData.tellg() << "position for write" << std::endl;
@@ -189,17 +193,28 @@ namespace TestTask
                              std::filesystem::directory_iterator{});
     }
 
-    void VFS::initMetaDataFile()
+    void VFS::initMetaInfoAndDataFile()
     {
-        std::ofstream file;
-        file.open(metaDirectory_.string() + NameFileMetaInfo, std::ios_base::binary);
-        size_t countFilesAndCountChunk = 0;
-        file.write(reinterpret_cast<char *>(&countFilesAndCountChunk), sizeof(size_t));
-        file.write(reinterpret_cast<char *>(&countFilesAndCountChunk), sizeof(size_t));
-        file.close();
+        std::ofstream fileMeta;
+        fileMeta.open(metaDirectory_.string() + NameFileMetaInfo, std::ios_base::binary);
+        if (fileMeta.is_open())
+        {
+            size_t countFilesAndCountChunk = 0;
+            fileMeta.write(reinterpret_cast<char *>(&countFilesAndCountChunk), sizeof(size_t));
+            fileMeta.write(reinterpret_cast<char *>(&countFilesAndCountChunk), sizeof(size_t));
+            fileMeta.close();
+        }
+        else
+        {
+            std::cerr << "Error initialization fileMeta" << std::endl;
+        }
         std::ofstream fileData;
-        file.open(rootDirectory_.string() + NameFileData, std::ios_base::binary);
-        file.close();
+        fileData.open(rootDirectory_.string() + NameFileData);
+        if (!fileData.is_open())
+        {
+            std::cerr << "Error initialization fileData" << std::endl;
+        }
+        fileData.close();
     }
 
     void VFS::initNewChunk()

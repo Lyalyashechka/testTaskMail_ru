@@ -20,6 +20,7 @@ namespace TestTask
                       std::ios_base::binary | std::ios_base::out | std::ios_base::in);
         if (metaFile.is_open())
         {
+            std::lock_guard<std::mutex> lock(mutex_);
             metaFile.seekg(2 * sizeof(size_t), metaFile.beg);
             for (int i = 0; i < countFiles; ++i)
             {
@@ -149,6 +150,8 @@ namespace TestTask
                       std::ios_base::binary | std::ios_base::out | std::ios_base::in);
         if (metaFile.is_open())
         {
+            std::lock_guard<std::mutex> lock(mutex_);
+
             metaFile.seekg(sizeof(size_t), metaFile.beg);
             size_t currentCountChunk = getCountChunk();
             currentCountChunk++;

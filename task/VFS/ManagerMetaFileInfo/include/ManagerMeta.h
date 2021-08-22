@@ -3,6 +3,7 @@
 #include <memory>
 #include <filesystem>
 #include <fstream>
+#include <mutex>
 
 #include "IManagerMeta.h"
 #include "ConstDefines.h"
@@ -32,5 +33,7 @@ namespace TestTask
         File readOneFileInfo(std::fstream &metaFile);
 
         size_t getCountFile();
+
+        std::mutex mutex_;
     };
 }

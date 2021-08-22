@@ -29,7 +29,7 @@ namespace TestTask
         void Close(File *f) override;
 
     private:
-        void initMetaDataFile();
+        void initMetaInfoAndDataFile();
 
         void initFilesystemStructure(const std::string &locationFileSystemDirectory);
 
@@ -39,11 +39,12 @@ namespace TestTask
 
         size_t numberOfFilesInDirectory(std::filesystem::path path);
 
-
         std::unique_ptr<IManagerMeta> ManagerMeta_;
 
         std::filesystem::path rootDirectory_;
 
         std::filesystem::path metaDirectory_;
+
+        std::mutex mutex_;
     };
 }
