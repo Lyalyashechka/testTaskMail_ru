@@ -5,7 +5,7 @@
 #include <fstream>
 
 #include "IManagerMeta.h"
-#include "RootName.h"
+#include "ConstDefines.h"
 
 namespace TestTask
 {

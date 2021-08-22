@@ -46,6 +46,11 @@ namespace TestTask
             }
             metaFile.close();
         }
+        else
+        {
+            std::cerr << "Error open metaFile" << std::endl;
+            exit(1);
+        }
         return nullptr;
     }
 
@@ -86,6 +91,11 @@ namespace TestTask
             metaFile.write(reinterpret_cast<char *>(&countFiles), sizeof(size_t));
             metaFile.close();
         }
+        else
+        {
+            std::cerr << "Error open metaFile" << std::endl;
+            exit(1);
+        }
     }
 
     size_t ManagerMeta::getCountFile()
@@ -100,6 +110,11 @@ namespace TestTask
             metaFile.read(reinterpret_cast<char *>(&countFiles), sizeof(size_t));
             metaFile.close();
             return countFiles;
+        }
+        else
+        {
+            std::cerr << "Error open metaFile" << std::endl;
+            exit(1);
         }
         return 0;
     }
@@ -118,6 +133,11 @@ namespace TestTask
             metaFile.close();
             return countChunks;
         }
+        else
+        {
+            std::cerr << "Error open metaFile" << std::endl;
+            exit(1);
+        }
         return 0;
     }
 
@@ -134,6 +154,11 @@ namespace TestTask
             currentCountChunk++;
             metaFile.write(reinterpret_cast<char *>(&currentCountChunk), sizeof(size_t));
             metaFile.close();
+        }
+        else
+        {
+            std::cerr << "Error open metaFile" << std::endl;
+            exit(1);
         }
     }
 

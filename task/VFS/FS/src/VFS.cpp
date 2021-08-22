@@ -86,15 +86,26 @@ namespace TestTask
                 }
                 else
                 {
-                    ssize_t nextChunk = -1;
+                    ssize_t nextChunk = IdEmptyNextChunk;
                     fileWithData.read(reinterpret_cast<char *>(&nextChunk), sizeof(ssize_t));
                     fileWithData.read(&buff[readed], countFilledBlock);
                     leftForReaded -= countFilledBlock;
                     readed += countFilledBlock;
                     totalReaded += SizeChunk;
+                    if (nextChunk == IdEmptyNextChunk)
+                    {
+                        fileWithData.close();
+                        return totalReaded;
+                    }
                     fileWithData.seekg(nextChunk * IndentOneChunk, fileWithData.beg);
                 }
             }
+            fileWithData.close();
+        }
+        else
+        {
+            std::cerr << "Error open fileWithData" << std::endl;
+            exit(1);
         }
         return totalReaded;
     }
@@ -147,6 +158,11 @@ namespace TestTask
             totalWrited = writed;
             fileWithData.close();
         }
+        else
+        {
+            std::cerr << "Error open fileWithData" << std::endl;
+            exit(1);
+        }
         return totalWrited;
     }
 
@@ -196,12 +212,17 @@ namespace TestTask
             fileWithData.seekg(numLastChunk * IndentOneChunk, fileWithData.beg);
             size_t countFreeInChunk = SizeChunk;
             fileWithData.write(reinterpret_cast<char *>(&countFreeInChunk), sizeof(size_t));
-            ssize_t nextChunk = -1;
+            ssize_t nextChunk = IdEmptyNextChunk;
             fileWithData.write(reinterpret_cast<char *>(&nextChunk), sizeof(ssize_t));
             char *masForElement = new char[SizeChunk];
             std::fill_n(masForElement, SizeChunk, ' ');
             fileWithData.write(masForElement, SizeChunk);
             fileWithData.close();
+        }
+        else
+        {
+            std::cerr << "Error open fileWithData" << std::endl;
+            exit(1);
         }
     }
 
@@ -214,10 +235,10 @@ namespace TestTask
             fileWithData.read(reinterpret_cast<char *>(&countFreeBlockInChunk), sizeof(size_t));
             if (countFreeBlockInChunk == 0)
             {
-                ssize_t nextChunk = -1;
+                ssize_t nextChunk = IdEmptyNextChunk;
                 size_t currentPosition = fileWithData.tellg();
                 fileWithData.read(reinterpret_cast<char *>(&nextChunk), sizeof(ssize_t));
-                if (nextChunk == -1)
+                if (nextChunk == IdEmptyNextChunk)
                 {
                     ssize_t numNewChunk = ManagerMeta_->getCountChunk();
                     initNewChunk();
