@@ -16,17 +16,21 @@ namespace TestTask
 
         File *findFile(const char *name, statusFile setStatusIfFind) override;
 
-        void setStatusFile(statusFile status) override;
-
         File *addFile(const char *name) override;
+
+        size_t getCountChunk() override;
+
+        void incrementCountChunk() override;
 
     private:
         std::filesystem::path metaDirectory_;
 
         void writeMetaInfo(File &file);
-        
-        size_t getCountFile();
 
-        size_t getCountChunk();
+        void setStatusFile(std::fstream &metaFile, statusFile status);
+
+        File readOneFileInfo(std::fstream &metaFile);
+
+        size_t getCountFile();
     };
 }

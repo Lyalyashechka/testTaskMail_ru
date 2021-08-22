@@ -4,6 +4,8 @@
 #include <system_error>
 #include <fstream>
 #include <memory>
+#include <algorithm>
+#include <iterator>
 
 #include "IVFS.h"
 #include "ManagerMeta.h"
@@ -30,6 +32,8 @@ namespace TestTask
         void initMetaDataFile();
 
         void initFilesystemStructure(const std::string &locationFileSystemDirectory);
+
+        void initNewChunk();
 
         size_t numberOfFilesInDirectory(std::filesystem::path path);
 

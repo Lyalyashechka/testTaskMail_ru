@@ -6,3 +6,4 @@
 #define NameFileData "/Data.txt"
 
 #define SizeChunk 1024
+#define IndentOneChunk (SizeChunk + sizeof(size_t) + sizeof(ssize_t))

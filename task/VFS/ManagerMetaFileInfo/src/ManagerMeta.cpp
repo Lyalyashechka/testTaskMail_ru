@@ -29,23 +29,30 @@ namespace TestTask
                 metaFile.read(reinterpret_cast<char *>(buf), currentFile.lenFileName);
                 buf[currentFile.lenFileName] = 0;
                 currentFile.fileName = buf;
+                delete buf;
                 int status;
                 metaFile.read(reinterpret_cast<char *>(&status), sizeof(int));
                 currentFile.status = static_cast<statusFile>(status);
                 metaFile.read(reinterpret_cast<char *>(&currentFile.numberFirstChunk), sizeof(size_t));
                 if (currentFile.fileName == name)
                 {
-                    //setStatusFile();
+                    setStatusFile(metaFile, setStatusIfFind);
+                    currentFile.status = setStatusIfFind;
+                    metaFile.close();
                     return new File(currentFile);
                 }
             }
+            metaFile.close();
         }
         return nullptr;
     }
 
-    void ManagerMeta::setStatusFile(statusFile status)
+    void ManagerMeta::setStatusFile(std::fstream &metaFile, statusFile status)
     {
-        std::cout << "ya ne bespolezniy" << std::endl;
+        size_t currentPosition = metaFile.tellg();
+        metaFile.seekg(currentPosition - sizeof(size_t) - sizeof(int), metaFile.beg);
+        int newStatus = static_cast<int>(status);
+        metaFile.write(reinterpret_cast<char *>(&newStatus), sizeof(int));
     }
 
     File *ManagerMeta::addFile(const char *name)
@@ -70,14 +77,11 @@ namespace TestTask
             metaFile.write(reinterpret_cast<char *>(file.fileName.data()), file.lenFileName);
             int statFile = static_cast<int>(file.status);
             metaFile.write(reinterpret_cast<char *>(&statFile), sizeof(int));
-            metaFile.write(reinterpret_cast<char *> (&file.numberFirstChunk), sizeof(size_t));
+            metaFile.write(reinterpret_cast<char *>(&file.numberFirstChunk), sizeof(size_t));
             size_t countFiles = getCountFile();
             metaFile.seekg(0, metaFile.beg);
             countFiles++;
             metaFile.write(reinterpret_cast<char *>(&countFiles), sizeof(size_t));
-            size_t countChunks = getCountChunk();
-            countChunks++;
-            metaFile.write(reinterpret_cast<char *>(&countChunks), sizeof(size_t));
             metaFile.close();
         }
     }
@@ -92,7 +96,6 @@ namespace TestTask
         {
             size_t countFiles;
             metaFile.read(reinterpret_cast<char *>(&countFiles), sizeof(size_t));
-            std::cout << countFiles << std::endl;
             metaFile.close();
             return countFiles;
         }
@@ -110,9 +113,27 @@ namespace TestTask
             metaFile.seekg(sizeof(size_t), metaFile.beg);
             size_t countChunks;
             metaFile.read(reinterpret_cast<char *>(&countChunks), sizeof(size_t));
-            std::cout << countChunks << std::endl;
+            metaFile.close();
             return countChunks;
         }
         return 0;
     }
+
+    void ManagerMeta::incrementCountChunk()
+    {
+        std::fstream metaFile;
+
+        metaFile.open(metaDirectory_.string() + NameFileMetaInfo,
+                      std::ios_base::binary | std::ios_base::out | std::ios_base::in);
+        if (metaFile.is_open())
+        {
+            metaFile.seekg(sizeof(size_t), metaFile.beg);
+            size_t currentCountChunk = getCountChunk();
+            currentCountChunk++;
+            metaFile.write(reinterpret_cast<char *>(&currentCountChunk), sizeof(size_t));
+            metaFile.close();
+        }
+    }
+
+
 }
