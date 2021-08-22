@@ -22,8 +22,6 @@ namespace TestTask
         }
         else
         {
-            File *currentFile = ManagerMeta_->findFileAndSetStatusIfFind(name, statusFile::readOnly_);
-
             return ManagerMeta_->findFileAndSetStatusIfFind(name, statusFile::readOnly_);
         }
     }
@@ -55,6 +53,11 @@ namespace TestTask
     size_t VFS::Read(File *f, char *buff, size_t len)
     {
         size_t totalReaded = 0;
+        if (f == nullptr || f->status != statusFile::readOnly_)
+        {
+            std::cerr << "file read error: " << std::endl;
+            return totalReaded;
+        }
         std::fstream fileWithData;
         fileWithData.open(rootDirectory_.string() + NameFileData /*, std::ios_base::binary | std::ios_base::out | std::ios_base::in*/);
         if (fileWithData.is_open())
@@ -98,6 +101,12 @@ namespace TestTask
 
     size_t VFS::Write(File *f, char *buff, size_t len)
     {
+        size_t totalWrited = 0;
+        if (f == nullptr || f->status != statusFile::writeOnly_)
+        {
+            std::cerr << "file write error" << std::endl;
+            return totalWrited;
+        }
         std::fstream fileWithData;
         fileWithData.open(rootDirectory_.string() + NameFileData /*, std::ios_base::binary | std::ios_base::out | std::ios_base::in*/);
         if (fileWithData.is_open())
@@ -117,7 +126,6 @@ namespace TestTask
                     fileWithData.write(&buff[writed], leftToWrite);
                     writed += leftToWrite;
                 }
-                //длтлтлдтдлтдлтдлт
                 else
                 {
                     size_t newCountFreeBlockInChunk = 0;
@@ -136,9 +144,10 @@ namespace TestTask
                     countFreeBlockInChunk = SizeChunk;
                 }
             }
+            totalWrited = writed;
             fileWithData.close();
         }
-        return 0;
+        return totalWrited;
     }
 
     void VFS::Close(File *f)

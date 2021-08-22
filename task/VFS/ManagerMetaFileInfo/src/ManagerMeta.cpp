@@ -27,7 +27,8 @@ namespace TestTask
                 if (currentFile.fileName == name)
                 {
                     if (currentFile.status == statusFile::default_ ||
-                        currentFile.status == setStatusIfFind)
+                        currentFile.status == setStatusIfFind ||
+                        setStatusIfFind == statusFile::default_)
                     {
                         setStatusFile(metaFile, setStatusIfFind);
                         currentFile.status = setStatusIfFind;

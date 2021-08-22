@@ -21,6 +21,8 @@ int main()
     IVFSPtr->Write(first, bufNew, 1024);
     IVFSPtr->Write(second, bufNew, 1024);
     char bufRead[1080];
+    IVFSPtr->Close(second);
+    second = IVFSPtr->Open("vtoroyFile");
     std::cout << IVFSPtr->Read(second, bufRead, 1080);
     std::cout << "readed"<<std::endl;
     for (int i = 0; i < 1080; ++i)
