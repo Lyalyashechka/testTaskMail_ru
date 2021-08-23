@@ -23,6 +23,7 @@ int main()
     IVFSPtr->Close(second);
     second = IVFSPtr->Open("vtoroyFile");
     std::cout << IVFSPtr->Read(second, bufRead, 1080) << " readed"<<std::endl;;
+    IVFSPtr->Close(second);
     /*for (int i = 0; i < 1080; ++i)
     {
         std::cout << bufRead[i];
