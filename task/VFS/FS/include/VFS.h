@@ -32,9 +32,9 @@ namespace TestTask
         void initMetaInfoAndDataFile();
 
         void initFilesystemStructure(const std::string &locationFileSystemDirectory);
-
+        //выделяет место в Data под новый чанк
         void initNewChunk();
-
+        //ставит каретку в начало последнего чанка файла, возвращает количество свободного места в чанке
         size_t setCarriageInLastChunkFile(std::fstream &fileWithData);
 
         size_t numberOfFilesInDirectory(std::filesystem::path path);

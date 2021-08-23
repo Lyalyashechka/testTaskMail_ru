@@ -72,6 +72,7 @@ namespace TestTask
             {
                 fileWithData.read(reinterpret_cast<char *>(&countFreeBlockInChunk), sizeof(size_t));
                 size_t countFilledBlock = SizeChunk - countFreeBlockInChunk;
+                //если не надо переходить на след чанк
                 if (leftForReaded < countFilledBlock)
                 {
                     fileWithData.seekg(sizeof(ssize_t), std::ios_base::cur);
@@ -79,6 +80,7 @@ namespace TestTask
                     readed += leftForReaded;
                     totalReaded += leftForReaded;
                 }
+                //если запросили прочитать больше чем есть на самом деле в файле
                 else if (leftForReaded > countFilledBlock && countFilledBlock < SizeChunk)
                 {
                     fileWithData.seekg(sizeof(ssize_t), std::ios_base::cur);
@@ -86,6 +88,7 @@ namespace TestTask
                     totalReaded += countFilledBlock;
                     readed = len;
                 }
+                //если надо прочитать весь чанк
                 else
                 {
                     ssize_t nextChunk = IdEmptyNextChunk;
@@ -128,11 +131,12 @@ namespace TestTask
 
             fileWithData.seekg(f->numberFirstChunk * IndentOneChunk, fileWithData.beg);
             size_t countFreeBlockInChunk = setCarriageInLastChunkFile(fileWithData);
-            std::cout << fileWithData.tellg() << "position for write" << std::endl;
+            //std::cout << fileWithData.tellg() << "position for write" << std::endl;
             int leftToWrite = len;
             int writed = 0;
             while (writed != len)
             {
+                //если данные поместятся в чанк
                 if (leftToWrite < countFreeBlockInChunk)
                 {
                     size_t newCountFreeBlockInChunk = countFreeBlockInChunk - leftToWrite;
@@ -219,6 +223,7 @@ namespace TestTask
 
     void VFS::initNewChunk()
     {
+        //записывает размер чанка, номер следующего чанка -1. заполняет чанк пробелами 
         std::fstream fileWithData;
         fileWithData.open(rootDirectory_.string() + NameFileData /*, std::ios_base::binary | std::ios_base::out | std::ios_base::in*/);
         if (fileWithData.is_open())
